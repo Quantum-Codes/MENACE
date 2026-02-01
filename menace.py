@@ -38,66 +38,65 @@ def generate_all_states():
     
     return all_states
 
+def check_winner(board: str):
+    # Check rows and columns
+    for i in range(3):
+        if board[i*3] == board[i*3+1] == board[i*3+2] != " ":
+            return board[i*3]
+        if board[i] == board[i+3] == board[i+6] != " ":
+            return board[i]
+        
+    # Check diagonals
+    if board[0] == board[4] == board[8] != " ":
+        return board[0]
+    if board[2] == board[4] == board[6] != " ":
+        return board[2]
+    return None
 
 def filter_game_states():
     all_states = generate_all_states()
     #remove all where (number of X) - (number of O) > 1 since we can only have alternating moves and X always starts
-    remove_state = [] # we have this list to avoid modifying the list while iterating over it
-    for state in all_states:
-        if state.count("X") - state.count("O") > 1 or state.count("O") > state.count("X"):
-            remove_state.append(state)
-    for state in remove_state:
-        all_states.remove(state)
-
+    # same as generating a new list with only valid states
+    all_states = [state for state in all_states if 0 <= state.count("X") - state.count("O") <= 1 and state.count(" ") > 1]
+    
     #remove rotations and mirrored states. 
     # For this we pick a state one at a time, generate all its rotations and mirrored versions, and then check if any of those already exist in new_states. IF not we add them.
     unique_states = []
     index_map = [6,3,0,7,4,1,8,5,2] # 90 deg rotated indexes. we can repeat this rotation again and again for every rotation.
     mirror_y_map = [2,1,0,5,4,3,8,7,6] # mirrored indexes along y axis
     mirror_x_map = [6,7,8,3,4,5,0,1,2] # mirrored indexes along x axis
-    for state in all_states:
-        
-        to_rotate = list(state)
-        y_mirror = [state[mirror_y_map[i]] for i in range(9)]
-        x_mirror = [state[mirror_x_map[i]] for i in range(9)]
-        similar_states = [state,x_mirror,y_mirror]  #similar states contins all states equivalent to the selected state
-        for i in range(3):
-            rotated_state = [to_rotate[index_map[i]] for i in range(9)]
-            to_rotate = list(rotated_state)
-            similar_states.append(rotated_state)
 
-        for item in similar_states:      
+    for state in all_states:
+        # If already won, skip. Dont waste processing time.
+        if check_winner(state):
+            continue
+        
+        # make mirror images
+        y_mirror = ''.join([state[mirror_y_map[i]] for i in range(9)])
+        x_mirror = ''.join([state[mirror_x_map[i]] for i in range(9)])
+        similar_states = [state, x_mirror, y_mirror]
+
+        # generate rotations (90 deg at a time)
+        to_rotate = state
+        to_rotate_y = y_mirror
+        to_rotate_x = x_mirror
+        for _ in range(3):
+            to_rotate = ''.join([to_rotate[index_map[j]] for j in range(9)])
+            to_rotate_y = ''.join([to_rotate_y[index_map[j]] for j in range(9)])
+            to_rotate_x = ''.join([to_rotate_x[index_map[j]] for j in range(9)])
+            similar_states.append(to_rotate)
+            similar_states.append(to_rotate_y)
+            similar_states.append(to_rotate_x)
+
+        # check if any of the similar states already exist in unique_states
+        for item in similar_states:  
             if item in unique_states:
                 break
         else:
-            unique_states.append(state) #if none matches then for loop is not broken and the state is added
-
-    #all game states in grid format
-    sample_space = []
-    for state in unique_states:
-        grid = [[" " for i in range(3)] for j in range(3)]
-        for i in range(9):
-            grid[i // 3][i % 3] = state[i]
-        sample_space.append(grid)
-
+            unique_states.append(state) #if none matches then for loop is not broken and the state is added (for-else loop)
     
-    return sample_space
+    return unique_states
 
-
-def fill_board(board, index, boards):
-    board = board.copy()
-    if index == 9:
-        boards.append("".join(board))
-        return
-    for symbol in ["X", "O", " "]:
-        board[index] = symbol
-        fill_board(board, index + 1, boards)
-
-def generate_all_boards():
-    boards = []
-    board = [" "] * 9
-    fill_board(board, 0, boards)
-    return boards
 
 if __name__ == "__main__":
-    print(len(generate_all_boards()))  #prints 765 unique game states after removing invalid and symmetric states
+    print(len(filter_game_states())) 
