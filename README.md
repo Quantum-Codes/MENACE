@@ -6,10 +6,9 @@ One of the first Reinforcement Learning algorithms made. This was used to play t
 
 Also in this i will show some basic python too for the 1st year students. Others can just skip those parts.
 
-## Credits
 Created by:
-- [@Quantum-Codes](https://github.com/Quantum-Codes)
-- [@AnmolSinha42](https://github.com/AnmolSinha42)
+- [@Quantum-Codes](https://github.com/Quantum-Codes) (Ankit Sinha, IIT Tirupati)
+- [@AnmolSinha42](https://github.com/AnmolSinha42) (Anmol Sinha, NIT Puducherry)
 
 ## Behaviour
 MENACE doesn't know the rules of Tic-Tac-Toe. It doesn't know that three-in-a-row wins. It only picks out of a learned whitelist moves from each game board possibility.
