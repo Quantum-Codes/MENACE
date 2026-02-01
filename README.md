@@ -87,7 +87,9 @@ def print_board(board: str):
 ---------
 {board[6]} | {board[7]} | {board[8]}""")
 ```
-For the 2D list version: (which we will not use in main code)
+<details>
+<summary>For the 2D list version: (which we will not use in main code)</summary>
+
 ```python
 board = [[" ", " ", " "] for _ in range(3)]
 # This is list comprehension. This is the shorter version of:
@@ -103,6 +105,7 @@ def print_board(board):
     print("-" * 9)
     print(" | ".join(board[2]))
 ```
+</details><br>
 
 Now let us create a function to get user input (Standard tictactoe, no AI yet)
 ```python
@@ -119,7 +122,9 @@ def player_turn(board: str, player: str) -> tuple[str, int]: # string version
         except (ValueError, IndexError): # valueeerror= not an int, indexerror= not in 0-8
             print("Invalid input. Please enter numbers between 0 and 8.")
 ```
-The 2D list version: (which we will not use in main code)
+<details>
+<summary>2D list version: (which we will not use in main code)</summary>
+
 ```python
 def player_turn(board: list[list[str]], player: str) -> int:
     while True:
@@ -133,6 +138,7 @@ def player_turn(board: list[list[str]], player: str) -> int:
         except (ValueError, IndexError):
             print("Invalid input. Please enter numbers between 0 and 8.")
 ```
+</details>
 
 ## 2. Game loop and player switching logic
 > skim if you already know basic python<br>
@@ -154,7 +160,10 @@ if __name__ == "__main__":
         board, move = game_loop(board, "X" if player == 1 else "O")     
         player = 1 - player # Switch player (1-1=0, 1-0=1)
 ```
-Also these are equivalent if loops:
+<details>
+<summary>compressed if loops</summary>
+
+These two code snippets are equivalent:
 ```python
 if player == 1:
     symbol = "X"
@@ -166,6 +175,7 @@ board, move = game_loop(board, symbol)
 symbol = "X" if player == 1 else "O"
 board, move = game_loop(board, symbol)
 ```
+</details>
 
 ### Checkpoint 1 
 The code now should run a basic tictactoe game between 2 players. Next we will add win checking logic.
@@ -243,8 +253,9 @@ def check_winner(board: str):
         return board[2]
     return None
 ```
+<details>
+<summary>2D list version (which we will not use in main code)</summary>
 
-2D list version: (which we will not use in main code)
 ```python
 def check_winner(board):
     # Check rows and columns
@@ -261,6 +272,9 @@ def check_winner(board):
         return board[0][2]
     return None
 ```
+</details>
+
+<br>
 2 player tictactoe game is now complete!!
 
 Now we need to add the AI itself to play against us. (later against itself)
@@ -285,3 +299,133 @@ if __name__ == "__main__":
         
         player = 1 - player # Switch player
 ```
+
+
+<br><br>
+
+# Creating the MENACE AI
+We will create a MENACE class that will handle all the logic for the AI. <br>
+We need to do: 
+1. We create an AI class for all the AI logic.
+2. Save every move played in a game (to reward/punish later) using lists.
+3. Create all possible board states and initialize matchboxes for them 
+4. After each game, reward/punish the moves played based on win/draw/loss 
+5. Integrate the AI to play against human 
+6. Make the AI play against itself to train 
+
+And somewhere in the middle we need a system to save whatever it learnt and load back on startup; also need to optimize the matchbox storage so that we dont store symmetric board states separately (since they are equivalent). 
+
+
+We couldve created a class for the game too but i wanted to show both functional programming and object oriented programming. So now we use functional programming for the game and object oriented programming for the AI.
+
+Added code: (for the 1 and 2 steps)
+```python
+class AI:
+    def __init__(self):
+        self.X_move_list = []
+        self.O_move_list = []
+        self.games_played = 0
+
+    def save_move(self, move, player):
+        if player == 1:
+            self.X_move_list.append(move)
+        else:
+            self.O_move_list.append(move)
+    
+    def reset_game_state(self):
+        self.X_move_list.clear()
+        self.O_move_list.clear()
+        self.games_played += 1
+
+# main loop
+if __name__ == "__main__":
+    #game always starts with X
+
+    ai = AI()
+    board = " " * 9
+    player = 1 # 1 = X, 0 = O
+    while True:
+        board, move = game_loop(board, "X" if player == 1 else "O")
+        ai.save_move(move, player)
+        
+        winner = check_winner(board)
+        if winner:
+            print_board(board)
+            print(f"Player {winner} wins!")
+            break
+        
+        player = 1 - player # Switch player
+```
+
+## Generating all possible board states 
+I will show 3 methods
+
+Need to create all possible combinations of X, O, and empty spaces in a 3x3 grid = (3 possibilities)^(9 positions) = 19683 states
+
+### Method 1: Iterative approach using loops
+```python
+def generate_all_boards():
+    boards = []
+    for i in range(3**9): # total 3^9 combinations
+        # you remember how you did this modulus and floor division thingy to convert decimal to other bases? This is the same, we are converting i to base 3 and mapping 0->X, 1->O, 2->" "
+        board = ""
+        num = i
+        for _ in range(9):
+            rem = num % 3
+            if rem == 0:
+                board += "X"
+            elif rem == 1:
+                board += "O"
+            else:
+                board += " "
+            num //= 3
+        boards.append(board)
+    return boards
+```
+### Method 2: Recursive approach
+```python
+def fill_board(board, index, boards):
+    board = board.copy()
+    if index == 9:
+        return
+    for symbol in ["X", "O", " "]:
+        board[index] = symbol
+        boards.append("".join(board))
+        fill_board(board, index + 1, boards)
+
+def generate_all_boards():
+    boards = []
+    board = [" "] * 9
+    fill_board(board, 0, boards)
+    return boards
+```
+
+### Method 3: Iterative using recursive relationships
+
+```
+Recurrence relation: (T = string of gamestates, n = number of moves made) 
+Base case: T(0) = "" 
+T(n) = T(n-1) + " " 
+     = T(n-1) + "X" 
+     = T(n-1) + "O" 
+We end at n = 9. So loop with 9 iterations
+```
+Code: <br>
+Technically this is recursion too, just another version that uses loops instead of function calls. Also more memory efficient than method 2.<br>
+
+```python
+def generator(possibilities):
+    states = []
+    for possibility in possibilities:
+        states.extend([possibility + " ", possibility + "X", possibility + "O"])
+    return states 
+
+def generate_all_states():
+    all_states = [""]
+    for _ in range(9):
+        all_states = generator(all_states)
+    return all_states
+```
+<br>
+
+## Removing invalid and symmetric states
