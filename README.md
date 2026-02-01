@@ -4,7 +4,8 @@ Self trained menace
 Menace - Matchbox Educable Noughts and Crosses Engine
 One of the first Reinforcement Learning algorithms made. This was used to play tic-tac-toe intelligently.
 
-Also in this i will show some basic python too for the 1st year students. Others can just skip those parts.
+Also in this i will show some basic python too for the 1st year students. Others can just skip those parts.<br>
+To the first years, there are some references to higher level topics too, don't get demotivated if you don't get it, it doesn't matter too much to code this up without knowing them fully. Send me doubts if needed
 
 Created by:
 - [@Quantum-Codes](https://github.com/Quantum-Codes) (Ankit Sinha, IIT Tirupati)
@@ -652,8 +653,9 @@ if __name__ == "__main__":
 </details>
 
 
-Now we need to map it to matchboxes and initialize beads in them. We will do that in the next section.<br>
-We can use a dictionary for this purpose. Also accessing a dictionary is O(1) on average (meaning fast regardless of number of items stored) unlike lists where searching is O(n) (meaning time taken increases linearly with number of items stored).<br>
-If we want to exploit this speed in the filtering thing too then we could've made a dict rather than a list for unique_states and then just do `if item in unique_states_dict:`and also we would already have a dict so no need to convert to dict later; but since this is a one time operation and we have only 304 items, it doesnt matter much.<br>
+Now we need to map it to matchboxes and initialize beads in them.<br>
+We can use a dictionary for this purpose. Also accessing a dictionary item is O(1) on average due to hashmaps (meaning fast regardless of number of items stored) unlike lists where searching is O(n) (meaning time taken increases linearly with number of items stored).<br>
+Also rehashing cost does not negate the O(1) since we max only add approx 600 items and we access its items (membership check) more than that.<br>
+If we want to exploit this speed in the filtering thing too then we could've made a dict rather than a list for unique_states and then just do `if item in unique_states_dict:`and also we would already have a dict so no need to convert to dict later; but since this is a one time operation and we have only 304 items, it doesnt matter much. I would do it but imagine spending 5 minutes on this optimisation that saves a few milliseconds once a while<br>
 
 ## TODO! converting to a dictionary of matchboxes and initializing beads
