@@ -19,9 +19,12 @@ def game_state():
         all_states = permutation(all_states)
     
     #remove all where (number of X) - (number of O) > 1 since we can only have alternating moves and X always starts
+    remove_state = []
     for state in all_states:
-        if (state.count("X") - state.count("O")) > 1:
-            all_states.remove(state)
+        if state.count("X") - state.count("O") > 1 or state.count("O")>state.count("X"):
+            remove_state.append(state)
+    for state in remove_state:
+        all_states.remove(state)
 
     #remove rotations and mirrored states. 
     # For this we pick a state one at a time, generate all its rotations and mirrored versions, and then check if any of those already exist in new_states. IF not we add them.
@@ -61,25 +64,25 @@ def game_state():
 
 
 
-def print_board(board):
-    print()
-    print(" | ".join(board[0]))
-    print("-" * 9)
-    print(" | ".join(board[1]))
-    print("-" * 9)
-    print(" | ".join(board[2]))
-
+def print_board(board: str):
+    print(f"""
+{board[0]} | {board[1]} | {board[2]}
+---------
+{board[3]} | {board[4]} | {board[5]}
+---------
+{board[6]} | {board[7]} | {board[8]}""")
+    
 def player_turn(board, player):
     while True:
         try:
             num = int(input(f"Player {player}, enter the cell number (0-8): "))
-            if board[num // 3][num % 3] == " ":
-                board[num // 3][num % 3] = player
-                return num
+            if board[num] == " ":
+                board = board[:num] + player + board[num+1:]
+                return board, num
             else:
                 print("That position is already taken. Try again.")
         except (ValueError, IndexError):
-            print("Invalid input. Please enter numbers between 0 and 2.")
+            print("Invalid input. Please enter numbers between 0 and 8.")
 
 def check_winner(board):
     # Check rows and columns
@@ -98,18 +101,20 @@ def check_winner(board):
 
 def game_loop(board, player):
     print_board(board)
-    move = player_turn(board, player)
-    return move
+    board, move = player_turn(board, player)
+    return board, move
     
 
 
 if __name__ == "__main__":
-    board = [[" ", " ", " "] for _ in range(3)]
+    #game always starts with X
+    
+    board = " " * 9
     X_move_list = []
     O_move_list = []
-    player = 1 # 1 = X, 0 = Y
+    player = 1 # 1 = X, 0 = O
     while True:
-        move = game_loop(board, "X" if player == 1 else "O")
+        board, move = game_loop(board, "X" if player == 1 else "O")
         if player == 1:
             X_move_list.append(move)
         else:

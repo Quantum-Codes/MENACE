@@ -4,6 +4,8 @@ Self trained menace
 Menace - Matchbox Educable Noughts and Crosses Engine
 One of the first Reinforcement Learning algorithms made. This was used to play tic-tac-toe intelligently.
 
+Also in this i will show some basic python too for the 1st year students. Others can just skip those parts.
+
 ## Behaviour
 MENACE doesn't know the rules of Tic-Tac-Toe. It doesn't know that three-in-a-row wins. It only picks out of a learned whitelist moves from each game board possibility.
 We need to teach it this whitelist (The ideal moves on every game board possible)
@@ -27,8 +29,10 @@ Also typically we always let the bot start so it only learns X's moves or Y's mo
 # Creating the tictactoe game itself
 We need to create a standard tictactoe game first and then put this system on it.
 
-## 1. Storing the game state
-So first we will decide how to store the game - 2D lists seem like a natural choice because of the 3x3 board. We can also use a length 9 string (and that will be better as we figure out later) but we will stick to 2D lists since this is a beginner blog
+## 1. Storing the game state 
+> skim through this part if you already know basic python<br>
+
+So first we will decide how to store the game - 2D lists seem like a natural choice because of the 3x3 board. We can also use a length 9 string (and that will be better as we figure out later). So we will use the string method but for a few functions i will also share the 2D list method (but not use it in the main code)
 
 If you are using strings then this is how you index: "012345678" and that corresponds to: <br>
 
@@ -70,7 +74,20 @@ You can see that <br>
 
 Also we will fill the table with X, O and " " (a space for empty cell)
 
-Let us first create the board (2d list)
+Let us first create the board and printing function:
+```python
+board = " " * 9  # This creates a string with 9 spaces representing an empty board
+
+# this is a print board function for string version
+def print_board(board: str):
+    print(f"""
+{board[0]} | {board[1]} | {board[2]}
+---------
+{board[3]} | {board[4]} | {board[5]}
+---------
+{board[6]} | {board[7]} | {board[8]}""")
+```
+For the 2D list version: (which we will not use in main code)
 ```python
 board = [[" ", " ", " "] for _ in range(3)]
 # This is list comprehension. This is the shorter version of:
@@ -78,5 +95,146 @@ board = []
 for _ in range(3):
     board.append([" ", " ", " "])
 
-# the string guys would just do board = " "*9
+def print_board(board):
+    print()
+    print(" | ".join(board[0]))
+    print("-" * 9)
+    print(" | ".join(board[1]))
+    print("-" * 9)
+    print(" | ".join(board[2]))
+```
+
+Now let us create a function to get user input (Standard tictactoe, no AI yet)
+```python
+def player_turn(board: str, player: str) -> tuple[str, int]: # string version
+    # returns 2 values = updated board and position played
+    while True:
+        try:
+            num = int(input(f"Player {player}, enter the cell number (0-8): "))
+            if board[num] == " ": # check if cell is empty
+                board = board[:num] + player + board[num+1:]
+                return board, num
+            else:
+                print("That position is already taken. Try again.")
+        except (ValueError, IndexError): # valueeerror= not an int, indexerror= not in 0-8
+            print("Invalid input. Please enter numbers between 0 and 8.")
+```
+The 2D list version: (which we will not use in main code)
+```python
+def player_turn(board: list[list[str]], player: str) -> int:
+    while True:
+        try:
+            num = int(input(f"Player {player}, enter the cell number (0-8): "))
+            if board[num // 3][num % 3] == " ":
+                board[num // 3][num % 3] = player
+                return num # this function does changes in place on the list, so no need to return board
+            else:
+                print("That position is already taken. Try again.")
+        except (ValueError, IndexError):
+            print("Invalid input. Please enter numbers between 0 and 8.")
+```
+
+## 2. Game loop and player switching logic
+> skim if you already know basic python<br>
+
+Now we will create a game loop function that will print the board, get user input and return the move played
+```python
+def game_loop(board, player):
+    print_board(board)
+    board, move = player_turn(board, player)
+    return board, move
+
+
+
+if __name__ == "__main__":
+    # game always starts with X
+    board = " " * 9
+    player = 1 # 1 = X, 0 = O
+    while True:
+        board, move = game_loop(board, "X" if player == 1 else "O")     
+        player = 1 - player # Switch player (1-1=0, 1-0=1)
+```
+Also these are equivalent if loops:
+```python
+if player == 1:
+    symbol = "X"
+else:
+    symbol = "O"
+board, move = game_loop(board, symbol)
+
+# shortened:
+symbol = "X" if player == 1 else "O"
+board, move = game_loop(board, symbol)
+```
+
+### Checkpoint 1 
+The code now should run a basic tictactoe game between 2 players. Next we will add win checking logic.
+<details>
+<summary>Full code until now (click this to reveal)</summary>
+
+```python
+def print_board(board: str):
+    print(f"""
+{board[0]} | {board[1]} | {board[2]}
+---------
+{board[3]} | {board[4]} | {board[5]}
+---------
+{board[6]} | {board[7]} | {board[8]}""")
+
+def player_turn(board: str, player: str) -> tuple[str, int]:
+    # returns 2 values = updated board and position played
+    while True:
+        try:
+            num = int(input(f"Player {player}, enter the cell number (0-8): "))
+            if board[num] == " ": # check if cell is empty
+                board = board[:num] + player + board[num+1:]
+                return board, num
+            else:
+                print("That position is already taken. Try again.")
+        except (ValueError, IndexError): # valueeerror= not an int, indexerror= not in 0-8
+            print("Invalid input. Please enter numbers between 0 and 8.")
+
+def game_loop(board, player):
+    print_board(board)
+    board, move = player_turn(board, player)
+    return board, move
+
+
+if __name__ == "__main__":
+    # game always starts with X
+    board = " " * 9
+    player = 1 # 1 = X, 0 = O
+    while True:
+        board, move = game_loop(board, "X" if player == 1 else "O")     
+        player = 1 - player # Switch player (1-1=0, 1-0=1)
+``` 
+
+</details>
+
+## 3. Win checking logic
+> skim if you already know basic python<br>
+
+[HERE PUT IMAGES FOR WINNING COMBINATIONS AND EXPLAIN WHY THE LOOP 3]
+
+Now we will create a function to check if there is a winner after each move
+```python
+def check_winner(board):
+```
+
+2D list version: (which we will not use in main code)
+```python
+def check_winner(board):
+    # Check rows and columns
+    for i in range(3):
+        if board[i][0] == board[i][1] == board[i][2] != " ":
+            return board[i][0]
+        if board[0][i] == board[1][i] == board[2][i] != " ":
+            return board[0][i]
+        
+    # Check diagonals
+    if board[0][0] == board[1][1] == board[2][2] != " ":
+        return board[0][0]
+    if board[0][2] == board[1][1] == board[2][0] != " ":
+        return board[0][2]
+    return None
 ```
