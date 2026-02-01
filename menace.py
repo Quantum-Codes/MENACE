@@ -39,12 +39,12 @@ def generate_all_states():
     return all_states
 
 
-def filter_game_state():
+def filter_game_states():
     all_states = generate_all_states()
     #remove all where (number of X) - (number of O) > 1 since we can only have alternating moves and X always starts
-    remove_state = []
+    remove_state = [] # we have this list to avoid modifying the list while iterating over it
     for state in all_states:
-        if state.count("X") - state.count("O") > 1 or state.count("O")>state.count("X"):
+        if state.count("X") - state.count("O") > 1 or state.count("O") > state.count("X"):
             remove_state.append(state)
     for state in remove_state:
         all_states.remove(state)

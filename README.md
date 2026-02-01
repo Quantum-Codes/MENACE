@@ -429,3 +429,39 @@ def generate_all_states():
 <br>
 
 ## Removing invalid and symmetric states
+Note that this is simply an optimization step to reduce the number of matchboxes we need to store and to make the AI learn a lot quicker. We can skip this step and just have MENACE learn all states but that would be inefficient. MENACE will anyway skip invalid boards since it will never encounter them.<br>
+You can skip this section and still have the AI work, just slower.
+
+### Invalid states
+Out of these 3^9 states, there are many that we will never encounter. The following are invalid states:
+
+1. States where the difference between number of X's and O's is more than 1 (since players alternate turns)
+2. States where O has more X's than O's (since X always starts first)
+3. States where both X and O have winning lines (impossible in a real game)
+
+Here are some examples of invalid states:
+
+```
+X | X | X      O | X | X
+---------      ---------
+  | O |          | O |  
+---------      ---------
+  |   |          |   | O
+```
+
+Condition 1 and 2 can be checked together by the condition: <br>`if ((count_X - count_O) > 1 OR (count_O > count_X)) then reject`<br>
+Condition 3 can be checked by using the `check_winner` function modified to count how many conditions within it are met. Note that 2 of X or O winning lines are possible.<br>
+BUT 2 of X parallel winning lines are impossible since the game would have ended on the first winning line. AND if you do that even then you have 6X and at max 3Os which anywaty violates condition 1.<br>
+
+Code for 1 and 2:
+```python
+def filter_game_states():
+    all_states = generate_all_states()
+    #remove all where (number of X) - (number of O) > 1 since we can only have alternating moves and X always starts
+    remove_state = [] # we have this list to avoid modifying the list while iterating over it
+    for state in all_states:
+        if state.count("X") - state.count("O") > 1 or state.count("O") > state.count("X"):
+            remove_state.append(state)
+    for state in remove_state:
+        all_states.remove(state)
+```
