@@ -214,11 +214,34 @@ if __name__ == "__main__":
 ## 3. Win checking logic
 > skim if you already know basic python<br>
 
-[HERE PUT IMAGES FOR WINNING COMBINATIONS AND EXPLAIN WHY THE LOOP 3]
+For checking the winner we need to check all possible winning combinations:
+1. Line among rows (3 combinations)
+2. Line among columns (3 combinations)
+3. Line among diagonals (2 combinations)
+
+Note: `index = row * 3 + col` <br>
+
+So for 1, we can check on each row if all 3 cells are same <br>
+On ith row, cells are: `i*3+0, i*3+1, i*3+2` and they all should be same. <br>
+
+For 2, on ith column, cells are: `0*3+i, 1*3+i, 2*3+i` and they all should be same. <br>
 
 Now we will create a function to check if there is a winner after each move
 ```python
-def check_winner(board):
+def check_winner(board: str):
+    # Check rows and columns
+    for i in range(3):
+        if board[i*3] == board[i*3+1] == board[i*3+2] != " ":
+            return board[i*3]
+        if board[i] == board[i+3] == board[i+6] != " ":
+            return board[i]
+        
+    # Check diagonals
+    if board[0] == board[4] == board[8] != " ":
+        return board[0]
+    if board[2] == board[4] == board[6] != " ":
+        return board[2]
+    return None
 ```
 
 2D list version: (which we will not use in main code)
@@ -237,4 +260,28 @@ def check_winner(board):
     if board[0][2] == board[1][1] == board[2][0] != " ":
         return board[0][2]
     return None
+```
+2 player tictactoe game is now complete!!
+
+Now we need to add the AI itself to play against us. (later against itself)
+
+### Checkpoint 2
+We have our 2 player tictactoe game completed!
+This is how our main loop looks like now:
+```python
+if __name__ == "__main__":
+    #game always starts with X
+    
+    board = " " * 9
+    player = 1 # 1 = X, 0 = O
+    while True:
+        board, move = game_loop(board, "X" if player == 1 else "O")
+
+        winner = check_winner(board)
+        if winner:
+            print_board(board)
+            print(f"Player {winner} wins!")
+            break
+        
+        player = 1 - player # Switch player
 ```

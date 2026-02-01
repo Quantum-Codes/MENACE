@@ -84,19 +84,19 @@ def player_turn(board, player):
         except (ValueError, IndexError):
             print("Invalid input. Please enter numbers between 0 and 8.")
 
-def check_winner(board):
+def check_winner(board: str):
     # Check rows and columns
     for i in range(3):
-        if board[i][0] == board[i][1] == board[i][2] != " ":
-            return board[i][0]
-        if board[0][i] == board[1][i] == board[2][i] != " ":
-            return board[0][i]
+        if board[i*3] == board[i*3+1] == board[i*3+2] != " ":
+            return board[i*3]
+        if board[i] == board[i+3] == board[i+6] != " ":
+            return board[i]
         
     # Check diagonals
-    if board[0][0] == board[1][1] == board[2][2] != " ":
-        return board[0][0]
-    if board[0][2] == board[1][1] == board[2][0] != " ":
-        return board[0][2]
+    if board[0] == board[4] == board[8] != " ":
+        return board[0]
+    if board[2] == board[4] == board[6] != " ":
+        return board[2]
     return None
 
 def game_loop(board, player):
