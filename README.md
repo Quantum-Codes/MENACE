@@ -650,3 +650,10 @@ if __name__ == "__main__":
 ```
 
 </details>
+
+
+Now we need to map it to matchboxes and initialize beads in them. We will do that in the next section.<br>
+We can use a dictionary for this purpose. Also accessing a dictionary is O(1) on average (meaning fast regardless of number of items stored) unlike lists where searching is O(n) (meaning time taken increases linearly with number of items stored).<br>
+If we want to exploit this speed in the filtering thing too then we could've made a dict rather than a list for unique_states and then just do `if item in unique_states_dict:`and also we would already have a dict so no need to convert to dict later; but since this is a one time operation and we have only 304 items, it doesnt matter much.<br>
+
+## TODO! converting to a dictionary of matchboxes and initializing beads
