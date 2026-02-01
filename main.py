@@ -35,9 +35,9 @@ def player_turn(board, player):
             print("Invalid input. Please enter numbers between 0 and 2.")
 
 
-def game_loop(board):
+def game_loop(board, player):
     print_board(board)
-    player_turn(board, "X")
+    player_turn(board, player)
     
 
 
@@ -46,4 +46,5 @@ if __name__ == "__main__":
 
     player = 1 # 1 = X, 0 = Y
     while True:
-        game_loop(board)
+        game_loop(board, "X" if player == 1 else "O")
+        player = 1 - player # Switch player
