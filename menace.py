@@ -72,8 +72,8 @@ def filter_game_states():
             continue
         
         # make mirror images
-        y_mirror = ''.join([state[mirror_y_map[i]] for i in range(9)])
-        x_mirror = ''.join([state[mirror_x_map[i]] for i in range(9)])
+        y_mirror = ''.join([state[index] for index in mirror_y_map])
+        x_mirror = ''.join([state[index] for index in mirror_x_map])
         similar_states = [state, x_mirror, y_mirror]
 
         # generate rotations (90 deg at a time)
@@ -81,9 +81,9 @@ def filter_game_states():
         to_rotate_y = y_mirror
         to_rotate_x = x_mirror
         for _ in range(3):
-            to_rotate = ''.join([to_rotate[index_map[j]] for j in range(9)])
-            to_rotate_y = ''.join([to_rotate_y[index_map[j]] for j in range(9)])
-            to_rotate_x = ''.join([to_rotate_x[index_map[j]] for j in range(9)])
+            to_rotate = ''.join([to_rotate[index] for index in index_map])
+            to_rotate_y = ''.join([to_rotate_y[index] for index in index_map])
+            to_rotate_x = ''.join([to_rotate_x[index] for index in index_map])
             similar_states.append(to_rotate)
             similar_states.append(to_rotate_y)
             similar_states.append(to_rotate_x)

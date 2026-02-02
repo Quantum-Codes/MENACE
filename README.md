@@ -1,11 +1,11 @@
 # MENACE
 Self trained menace
 
-Menace - Matchbox Educable Noughts and Crosses Engine
+Menace - Matchbox Educable Noughts and Crosses Engine<br>
 One of the first Reinforcement Learning algorithms made. This was used to play tic-tac-toe intelligently.
 
 Also in this i will show some basic python too for the 1st year students. Others can just skip those parts.<br>
-To the first years, there are some references to higher level topics too, don't get demotivated if you don't get it, it doesn't matter too much to code this up without knowing them fully. Send me doubts if needed
+To the first years, there are some references to higher level topics too, don't get demotivated if you don't get it, it doesn't matter too much to code this up without knowing them fully. Send me doubts if needed.
 
 Created by:
 - [@Quantum-Codes](https://github.com/Quantum-Codes) (Ankit Sinha, IIT Tirupati)
@@ -585,22 +585,42 @@ Code for 1 and 2:
 def filter_game_states():
     all_states = generate_all_states()
     #remove all where (number of X) - (number of O) > 1 since we can only have alternating moves and X always starts
-    remove_state = [] # we have this list to avoid modifying the list while iterating over it
+    # we can just make a new list that only has valid states
+    new_all_states = []
     for state in all_states:
-        if state.count("X") - state.count("O") > 1 or state.count("O") > state.count("X"):
-            remove_state.append(state)
-    for state in remove_state:
-        all_states.remove(state)
+        if not (state.count("X") - state.count("O") > 1 or state.count("O") > state.count("X")):
+            new_all_states.append(state)
 ```
 
-Code for 3 and 4:
-I will just add this right below the `for states in all_states:` loop in the above code
+Code for 3 and 4:<br>
+I will just add this to check if any of the state is a winner
 ```python
         if check_winner(state):
             continue
 ```
+Like this:
 
-### Symmetric states
+```python
+def filter_game_states():
+    all_states = generate_all_states()
+    #remove all where (number of X) - (number of O) > 1 since we can only have alternating moves and X always starts
+    # we can just make a new list that only has valid states
+    new_all_states = []
+    for state in all_states:
+        if not (state.count("X") - state.count("O") > 1 or state.count("O") > state.count("X")):
+            new_all_states.append(state)
+
+    all_states = new_all_states
+    unique_states = [] # we add all non winning valid states here
+    for state in all_states:
+        if check_winner(state):
+            continue # skip already won states
+        unique_states.append(state) # add if not already won
+    
+    return unique_states
+```
+
+### Why remove symmetric states?
 Many board states are symmetric to one another (rotations and mirror images). We can remove these symmetric states by picking a state one at a time, generating all its rotations and mirrored versions, and then checking if any of those already exist in new_states. IF not we add them.<BR>
 
 but why even care?<br>
@@ -616,8 +636,122 @@ X | X |          |   | O        | X | X
 2nd one is a clockwise 90 deg rotation of 1st one<br>
 3rd one is a mirror image of 1st one along y axis<br>
 But in all of them, player X just need to play the same move (same to us humans - complete the X line).<br>
+Wouldnt you be mad if the AI wins in one of them but then plays dumb in the other? I would (especially after all this coding).<br>
 So just training the AI on one of these should teach it how to handle ALL of them.<br>
 This is why we remove equivalent symmetric states. And later when we find these during a game, we convert these states by rotations or reflections to match one of these for picking the move and later training.<br>
+
+### Removing symmetric states
+We first need to find out a way to rotate a board and mirror it too.<br>
+Let us see how the rotated board looks like:<br>
+```
+Original indexes: 0 1 2
+                  3 4 5
+                  6 7 8
+
+Rotated indexes:  6 3 0
+(Clockwise)       7 4 1
+                  8 5 2
+
+Mirror along y-axis indexes:
+                2 1 0
+                5 4 3
+                8 7 6
+
+Mirror along x-axis indexes:
+                6 7 8
+                3 4 5
+                0 1 2
+```
+We can have mathematical fomulaes here too, like you can just transpose+reverse every row to rotate 90deg anticlockwise but that is more complex to code and understand. (especially combining the fact that we are not working with a 2D array but a 1D string so we need to use that `index = f(i,j)` formula earlier)<br>
+
+The simplest way of rotating i can see is to create an index map for each transformation and then use that to create the new string.<br>
+What do i mean by that? look at this:
+```python
+sample = "ABCDE" # original index: 01234
+index_map = [4,3,2,1,0] # this is reversed original index
+reversed_string = ''
+for index in index_map:
+    reversed_string += sample[index] 
+    # we are getting indexes from index_mapm getting the corresponding character from sample string and adding to new string
+print(reversed_string) # prints EDCBA
+
+# another example, with the compressed for loop and a <str>.join(<iterable>) method
+index_map2 = [1,0,2,3,4] # interchange first 2 characters
+swapped_string = ''.join([sample[index] for index in index_map2])
+print(swapped_string) # prints BACDE
+```
+We can use the same for rotations. We already have the index maps from the rotated board I showed above.
+
+```python
+original_board = [0,1,2,3,4,5,6,7,8]
+rotated_board =  [6,3,0,7,4,1,8,5,2]
+x_mirrored_board = [6,7,8,3,4,5,0,1,2]
+y_mirrored_board = [2,1,0,5,4,3,8,7,6]
+```
+We can now use these index maps to generate all similar states (rotations and mirror images) of a given board state.<br>
+Why didnt i make maps for 180 and 270 deg rotations? Because we can just keep rotating the 90 deg rotated board again and again to get those.<br>
+
+Rotation of board again and again:
+```python
+original_board = "XOX OX   "
+to_rotate = original_board # just renaming. this does not make a copy and it will change original_board too. (remember pointers from C? both of these vars point to the same list in memory)
+print(to_rotate)
+for _ in range(3):
+    to_rotate = [to_rotate[index] for index in rotated_board]
+    print(to_rotate)
+```
+This prints all 4 rotations of the original board.<br>
+We similarly can do for mirrored boards too.<br>
+
+Let us implement this. For every state, we generate all its similar states and check if any of those already exist in unique_states. If not we add them.<br>
+
+```python
+def filter_game_states():
+    all_states = generate_all_states()
+    new_all_states = []
+    for state in all_states:
+        if not (state.count("X") - state.count("O") > 1 or state.count("O") > state.count("X")):
+            new_all_states.append(state)
+
+    all_states = new_all_states
+
+    #remove rotations and mirrored states. 
+    # For this we pick a state one at a time, generate all its rotations and mirrored versions, and then check if any of those already exist in new_states. IF not we add them.
+    unique_states = []
+    index_map = [6,3,0,7,4,1,8,5,2] # 90 deg rotated indexes. we can repeat this rotation again and again for every rotation.
+    mirror_y_map = [2,1,0,5,4,3,8,7,6] # mirrored indexes along y axis
+    mirror_x_map = [6,7,8,3,4,5,0,1,2] # mirrored indexes along x axis
+    for state in all_states:
+        # If already won, skip. Dont waste processing time.
+        if check_winner(state):
+            continue
+        
+        # make mirror images
+        y_mirror = ''.join([state[index] for index in mirror_y_map])
+        x_mirror = ''.join([state[index] for index in mirror_x_map])
+        similar_states = [state, x_mirror, y_mirror]
+
+        # generate rotations (90 deg at a time)
+        to_rotate = state
+        to_rotate_y = y_mirror
+        to_rotate_x = x_mirror
+        for _ in range(3):
+            to_rotate = ''.join([to_rotate[index] for index in index_map])
+            to_rotate_y = ''.join([to_rotate_y[index] for index in index_map])
+            to_rotate_x = ''.join([to_rotate_x[index] for index in index_map])
+            similar_states.append(to_rotate)
+            similar_states.append(to_rotate_y)
+            similar_states.append(to_rotate_x)
+
+        # check if any of the similar states already exist in unique_states
+        for item in similar_states:  
+            if item in unique_states:
+                break
+        else:
+            unique_states.append(state) #if none matches then for loop is not broken and the state is added (for-else loop)
+    
+    return unique_states
+```
 
 ## How do we know this is right?
 We do know that the original guy got 304 matchboxes after all this. Let us try to get that number after applying his extra conditions. Conditions he had that we did not implement:
@@ -682,8 +816,8 @@ def filter_game_states():
     all_states = generate_all_states()
     #remove all where (number of X) - (number of O) > 1 since we can only have alternating moves and X always starts
     # same as generating a new list with only valid states
-    all_states = [state for state in all_states if state.count("X") - state.count("O") <= 1 and state.count("O") <= state.count("X")]
-
+    all_states = [state for state in all_states if 0 <= state.count("X") - state.count("O") <= 1 and state.count(" ") > 1]
+    
     #remove rotations and mirrored states. 
     # For this we pick a state one at a time, generate all its rotations and mirrored versions, and then check if any of those already exist in new_states. IF not we add them.
     unique_states = []
@@ -697,8 +831,8 @@ def filter_game_states():
             continue
         
         # make mirror images
-        y_mirror = ''.join([state[mirror_y_map[i]] for i in range(9)])
-        x_mirror = ''.join([state[mirror_x_map[i]] for i in range(9)])
+        y_mirror = ''.join([state[index] for index in mirror_y_map])
+        x_mirror = ''.join([state[index] for index in mirror_x_map])
         similar_states = [state, x_mirror, y_mirror]
 
         # generate rotations (90 deg at a time)
@@ -706,9 +840,9 @@ def filter_game_states():
         to_rotate_y = y_mirror
         to_rotate_x = x_mirror
         for _ in range(3):
-            to_rotate = ''.join([to_rotate[index_map[j]] for j in range(9)])
-            to_rotate_y = ''.join([to_rotate_y[index_map[j]] for j in range(9)])
-            to_rotate_x = ''.join([to_rotate_x[index_map[j]] for j in range(9)])
+            to_rotate = ''.join([to_rotate[index] for index in index_map])
+            to_rotate_y = ''.join([to_rotate_y[index] for index in index_map])
+            to_rotate_x = ''.join([to_rotate_x[index] for index in index_map])
             similar_states.append(to_rotate)
             similar_states.append(to_rotate_y)
             similar_states.append(to_rotate_x)
@@ -721,7 +855,6 @@ def filter_game_states():
             unique_states.append(state) #if none matches then for loop is not broken and the state is added (for-else loop)
     
     return unique_states
-
 
 if __name__ == "__main__":
     print(len(filter_game_states())) 
