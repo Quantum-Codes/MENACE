@@ -588,7 +588,7 @@ def filter_game_states():
     # we can just make a new list that only has valid states
     new_all_states = []
     for state in all_states:
-        if not (state.count("X") - state.count("O") > 1 or state.count("O") > state.count("X")):
+        if 1 >= (state.count("X") - state.count("O")) >= 0:
             new_all_states.append(state)
 ```
 
@@ -607,7 +607,7 @@ def filter_game_states():
     # we can just make a new list that only has valid states
     new_all_states = []
     for state in all_states:
-        if not (state.count("X") - state.count("O") > 1 or state.count("O") > state.count("X")):
+        if 1 >= (state.count("X") - state.count("O")) >= 0:
             new_all_states.append(state)
 
     all_states = new_all_states
@@ -708,12 +708,19 @@ Let us implement this. For every state, we generate all its similar states and c
 ```python
 def filter_game_states():
     all_states = generate_all_states()
+
+    # ---
     new_all_states = []
     for state in all_states:
-        if not (state.count("X") - state.count("O") > 1 or state.count("O") > state.count("X")):
+        if 1 >= state.count("X") - state.count("O") >= 0:
             new_all_states.append(state)
 
     all_states = new_all_states
+    # ---
+
+    # By the way, all the code in the above block wrapped by these "---" can be written in one line as:
+    # all_states = [state for state in all_states if 0 <= state.count("X") - state.count("O") <= 1]
+    # I wont actually use that in the explanation further so you can ignore this fact if too complex
 
     #remove rotations and mirrored states. 
     # For this we pick a state one at a time, generate all its rotations and mirrored versions, and then check if any of those already exist in new_states. IF not we add them.
@@ -764,11 +771,11 @@ For 2, we can make sure that number of `" "` (blanks) are more than 1.<br>
 
 We change 
 ```python
-all_states = [state for state in all_states if state.count("X") - state.count("O") <= 1 and state.count("O") <= state.count("X")]
+if 1 >= state.count("X") - state.count("O") >= 0:
 ```
 to
 ```python
-all_states = [state for state in all_states if state.count("X") - state.count("O") == 0 and state.count(" ") > 1]
+if 1 >= state.count("X") - state.count("O") >= 0 and state.count(" ") > 1:
 ```
 
 <details>
