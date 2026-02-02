@@ -349,6 +349,16 @@ On ith row, cells are: `i*3+0, i*3+1, i*3+2` and they all should be same. <br>
 
 For 2, on ith column, cells are: `0*3+i, 1*3+i, 2*3+i` and they all should be same. <br>
 
+Test these formulae/indexes out on these if you need to:
+```
+                                j=0 j=1 j=2
+X | X | X      O | X | X    i=0  0 | 1 | 2
+---------      ---------         ---------
+  | O | O        | O |      i=1  3 | 4 | 5
+---------      ---------         ---------
+  |   |        X |   | O    i=2  6 | 7 | 8
+```
+
 Now we will create a function to check if there is a winner after each move
 ```python
 def check_winner(board: str):
@@ -543,7 +553,9 @@ def generate_all_states():
 
 ## Removing invalid and symmetric states
 Note that this is simply an optimization step to reduce the number of matchboxes we need to store and to make the AI learn a lot quicker. We can skip this step and just have MENACE learn all states but that would be inefficient. MENACE will anyway skip invalid boards since it will never encounter them.<br>
-You can skip this section and still have the AI work, just slower.
+You can skip this section and still have the AI work, just slower.<br>
+
+Note that doing anything with these roations is a bit tricky so take your time to understand it.<br>
 
 ### Invalid states
 Out of these 3^9 states, there are many that we will never encounter. The following are invalid states:
@@ -588,7 +600,26 @@ I will just add this right below the `for states in all_states:` loop in the abo
             continue
 ```
 
-### How do we know this is right?
+### Symmetric states
+Many board states are symmetric to one another (rotations and mirror images). We can remove these symmetric states by picking a state one at a time, generating all its rotations and mirrored versions, and then checking if any of those already exist in new_states. IF not we add them.<BR>
+
+but why even care?<br>
+Would you agree all these states are equivalent?<br>
+
+```
+X | O | O      X |   | X      O | O | X
+---------      ---------      ---------
+  | O |        X | O | O        | O |
+---------      ---------      ---------
+X | X |          |   | O        | X | X
+```
+2nd one is a clockwise 90 deg rotation of 1st one<br>
+3rd one is a mirror image of 1st one along y axis<br>
+But in all of them, player X just need to play the same move (same to us humans - complete the X line).<br>
+So just training the AI on one of these should teach it how to handle ALL of them.<br>
+This is why we remove equivalent symmetric states. And later when we find these during a game, we convert these states by rotations or reflections to match one of these for picking the move and later training.<br>
+
+## How do we know this is right?
 We do know that the original guy got 304 matchboxes after all this. Let us try to get that number after applying his extra conditions. Conditions he had that we did not implement:
 
 1. Only X plays. (we added both X and O)
