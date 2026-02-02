@@ -5,6 +5,8 @@ Self trained menace
 - [] Explain the 3 methods of generation in detail tags
 - [] Update old code and test again for the "how do we know it's true" Part. Maybe some conditions were messed up in re-editing. proofread the whole section. 
 - [] Add joke as a climax to the blog - "And now we need to print <something>. that is left as an excercise to the reader"
+- [ ] Making matchboxes, filling, training, avoiding empty matchboxes, completed AI vs human, Adding AI vs AI to train, Running, Try to optimize using multiprocess or threads, Result
+Trying to deploy while handling multiple games concurrently and learn socketio
 
 Menace - Matchbox Educable Noughts and Crosses Engine<br>
 One of the first Reinforcement Learning algorithms made. This was used to play tic-tac-toe intelligently.
