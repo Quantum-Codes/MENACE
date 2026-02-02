@@ -112,7 +112,7 @@ def print_board(board):
 ```
 </details><br>
 
-Now let us create a function to get user input (Standard tictactoe, no AI yet)
+Now let us create a function to get user input AND play the move (Standard tictactoe, no AI yet)
 ```python
 def player_turn(board: str, player: str) -> tuple[str, int]: # string version
     # returns 2 values = updated board and position played
@@ -127,6 +127,97 @@ def player_turn(board: str, player: str) -> tuple[str, int]: # string version
         except (ValueError, IndexError): # valueeerror= not an int, indexerror= not in 0-8
             print("Invalid input. Please enter numbers between 0 and 8.")
 ```
+<details>
+<summary>If you need an explanation (very detailed) of how this works, click here. </summary>
+
+Let us start with getting user input (make a new file and follow along):
+```python
+num = int(input("Enter a number between 0 and 8: "))
+print(f"You entered: {num}")
+```
+This is simple, asks input with the `input()` function and converts it to an integer using `int()`. `input()` returns a string so i need to convert to an integer for greaterthan (`>`) or lesserthan (`<`) operations.
+
+BUT what if i enter `10` or `100` or `-1`? These are invalid. I need to ask user again if i get these values. <br>
+So what we will do is that we will keep asking user for input until we get a valid input. For this we can use a `while True:` loop which will run forever until we break out of it. <br>
+```python
+while True:
+    num = int(input("Enter a number between 0 and 8: "))
+    if 0 <= num <= 8:
+        print(f"You entered: {num}")
+        break
+    else:
+        print("Invalid input. Please try again.")
+```
+We have caught invalid integer inputs now. What if someone enters `abc` though? `int()` function cannot handle that, it will throw an error (try it, it gives a `ValueError`). So we need to catch that error. For this we use `try-except` blocks. <br>
+```python
+while True:
+    try:
+        num = int(input("Enter a number between 0 and 8: "))
+        if 0 <= num <= 8:
+            print(f"You entered: {num}")
+            break
+        else:
+            print("Invalid input. Please try again.")
+    except ValueError:
+        print("Invalid input. Please enter a valid integer.")
+```
+We have handled all bad inputs! While we are at try-except, try out what error will this code give in this input: `abc` <br>
+```python
+arr = [1,2,3]
+num = int(input("Enter a number between 0 and 8: "))
+print(arr[num])
+```
+This gives an `IndexError` since the index is out of range (range is 0-2, both 0 and 2 included). So we can catch both `ValueError` and `IndexError` in the same except block like this: <br>
+```python
+arr = [1,2,3]
+while True:
+    try:
+        num = int(input("Enter a number between 0 and 8: "))
+        print(arr[num])
+        break
+    except (ValueError, IndexError):
+        print("Invalid input. Please enter numbers between 0 and 8.")
+```
+There was nothing wrong with the `if` loop earlier. I would say that previous one was better too! I just randomly wanted to show you how to catch multiple exceptions in one except block.<br>
+Now rather than just printing that number, we need to update the gameboard. Go back to your main file, and now let us think how to update the board. <br>
+We need to check if the cell is empty first. If it is empty, we put the player's symbol there. If not, we ask for input again. We check that by `if board[num] == " "` <br>
+<br>
+### **Updating the string:** <br>
+String are immutable, cannot be changed. So something like `board[num] = player` will not work. We need to create a new string with the updated value. <br>
+Try this out:
+
+```python
+board = "XOXX OOXX"
+print(board[:4]) # prints indexes 0,1,2,3 (4 at end index, so prints upto that. Start index is not given so it just starts from 0 in this case)
+print(board[5:]) # prints indexes 5,6,7,8 (start index is 5, end index not given so goes till end)
+```
+This is called string slicing. Experiment more with this if you want. We can use this for creating that new string. We can slice upto the index, then put the symbol, and put the rest of the characters.<br>
+
+```python
+board = "XOXX OOXX"
+board = board[:num] + "X" + board[num+1:] # this gives "XOXXXOOXX"
+```
+Lets implement all this:<br>
+Also we make this a function that takes in the board and the player (X or O) that needs to be inserted. Finally we return the updated board and the position played. <br>
+
+
+```python
+def player_turn(board, player): 
+    # returns 2 values = updated board and position played
+    while True:
+        try:
+            num = int(input(f"Player {player}, enter the cell number (0-8): "))
+            if board[num] == " ": # check if cell is empty
+                board = board[:num] + player + board[num+1:]
+                return board, num
+            else:
+                print("That position is already taken. Try again.")
+        except (ValueError, IndexError): # valueeerror= not an int, indexerror= not in 0-8
+            print("Invalid input. Please enter numbers between 0 and 8.")
+```
+
+<br>
+</details>
 <details>
 <summary>2D list version: (which we will not use in main code)</summary>
 
@@ -180,6 +271,23 @@ board, move = game_loop(board, symbol)
 symbol = "X" if player == 1 else "O"
 board, move = game_loop(board, symbol)
 ```
+</details>
+
+<details>
+<summary> If you are wondering how `board, move = player_turn(board, player)` works, click here </summary>
+
+This is called tuple unpacking. When a function returns multiple values separated by commas, it is actually returning a tuple containing those values. You can unpack this tuple into separate variables in one line.
+```python
+def example_function():
+    return 1, "hello", 3.14
+
+print(type(example_function())) # prints <class 'tuple'> (type function returns the type of the data passed to it)
+a, b, c = example_function()
+print(a) # prints 1
+print(b) # prints hello
+print(c) # prints 3.14
+```
+
 </details>
 
 ### Checkpoint 1 
@@ -416,7 +524,7 @@ T(n) = T(n-1) + " "
 We end at n = 9. So loop with 9 iterations
 ```
 Code: <br>
-Technically this is recursion too, just another version that uses loops instead of function calls. Also more memory efficient than method 2.<br>
+Technically this is recursion too, just another version that uses loops instead of function calls. Also more memory efficient than method 2. (i like this one)<br>
 
 ```python
 def generator(possibilities):
@@ -651,7 +759,7 @@ if __name__ == "__main__":
 ```
 
 </details>
-
+<br>
 
 Now we need to map it to matchboxes and initialize beads in them.<br>
 We can use a dictionary for this purpose. Also accessing a dictionary item is O(1) on average due to hashmaps (meaning fast regardless of number of items stored) unlike lists where searching is O(n) (meaning time taken increases linearly with number of items stored).<br>
