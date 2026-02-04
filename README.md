@@ -532,9 +532,6 @@ def generate_all_boards():
     return boards
 ```
 
-<details>
-<summary>If you need an explanation of how it worked, click here</summary>
-
 We start with index 0, try X, O, " " at index 0 one by one. For each of these, we call the function recursively for index 1.<br>
 At index 1, we again try X, O, " " one by one. For each of these, we call the function recursively for index 2.<br>
 BUT it doesnt work the same way as it looks. 
@@ -546,9 +543,7 @@ This is how all the permutations are generated:<br>
 `"XXXXXXXO "` -> `"XXXXXXX  "` -> ... and so on<br>
 
 It's fine if you weren't able to follow. Just look at the following simplified animation: (simplification = 2 positions instead of 9, and i marked blank as `B` for better visibility)<br>
-[GIF HERE!!]
-
-</details>
+![Animation of a recursion tree](https://github.com/Quantum-Codes/MENACE/blob/main/images/generator_recursion.gif)
 
 ### Method 3: Iterative using recursive relationships
 
@@ -567,13 +562,13 @@ Technically this is recursion too, just another version that uses loops instead 
 def generator(possibilities):
     states = []
     for possibility in possibilities:
-        states.extend([possibility + " ", possibility + "X", possibility + "O"])
+        states.extend([possibility + " ", possibility + "X", possibility + "O"]) # for each existing state, just add 3 possibilities of the new next character
     return states 
 
 def generate_all_states():
     all_states = [""]
     for _ in range(9):
-        all_states = generator(all_states)
+        all_states = generator(all_states) # run 9 times to add 9 characters
     return all_states
 ```
 <br>
