@@ -544,6 +544,8 @@ This is how all the permutations are generated:<br>
 
 It's fine if you weren't able to follow. Just look at the following simplified animation: (simplification = 2 positions instead of 9, and i marked blank as `B` for better visibility)<br>
 ![Animation of a recursion tree](https://github.com/Quantum-Codes/MENACE/blob/main/images/generator_recursion.gif)
+<img src="images/generator_recursion.gif" width="70%" />
+
 
 ### Method 3: Iterative using recursive relationships
 
