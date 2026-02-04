@@ -2,10 +2,10 @@
 Self trained menace
 
 # TODO
-- [] Explain the 3 methods of generation in detail tags
-- [] Update old code and test again for the "how do we know it's true" Part. Maybe some conditions were messed up in re-editing. proofread the whole section. 
-- [] Add joke as a climax to the blog - "And now we need to print <something>. that is left as an excercise to the reader"
-- [ ] Making matchboxes, filling, training, avoiding empty matchboxes, completed AI vs human, Adding AI vs AI to train, Running, Try to optimize using multiprocess or threads, Result
+[ ] Explain the 3 methods of generation in detail tags<br>
+[ ] Update old code and test again for the "how do we know it's true" Part. Maybe some conditions were messed up in re-editing. proofread the whole section. <br>
+[ ] Add joke as a climax to the blog - "And now we need to print <something>. that is left as an excercise to the reader"<br>
+[ ] Making matchboxes, filling, training, avoiding empty matchboxes, completed AI vs human, Adding AI vs AI to train, Running, Try to optimize using multiprocess or threads, Result
 Trying to deploy while handling multiple games concurrently and learn socketio
 
 Menace - Matchbox Educable Noughts and Crosses Engine<br>
@@ -513,22 +513,42 @@ def generate_all_boards():
     return boards
 ```
 ### Method 2: Recursive approach
+Here we will use recursion to fill the board position by position. At each position we will try all 3 possibilities and then call the function recursively for the next position.<br>
+
 ```python
 def fill_board(board, index, boards):
     board = board.copy()
-    if index == 9:
+    if index == 9: # index 9 is out of bounds. we had 0-8 index. So we have permuted all positions
         return
     for symbol in ["X", "O", " "]:
-        board[index] = symbol
-        boards.append("".join(board))
-        fill_board(board, index + 1, boards)
+        board[index] = symbol # change current index to symbol (create a permutation)
+        boards.append("".join(board)) # make it into string and add to boards permutation lists
+        fill_board(board, index + 1, boards) # now we permute at the next index
 
 def generate_all_boards():
     boards = []
-    board = [" "] * 9
-    fill_board(board, 0, boards)
+    board = [" "] * 9 # we init with empty, then at index we permute the possibilities
+    fill_board(board, 0, boards) # permute at index 0 initially
     return boards
 ```
+
+<details>
+<summary>If you need an explanation of how it worked, click here</summary>
+
+We start with index 0, try X, O, " " at index 0 one by one. For each of these, we call the function recursively for index 1.<br>
+At index 1, we again try X, O, " " one by one. For each of these, we call the function recursively for index 2.<br>
+BUT it doesnt work the same way as it looks. 
+
+This is how all the permutations are generated:<br>
+`"        "` -> `"X       "` -> `"XX      "` -> `"XXX     "` -> ... -> `"XXXXXXXXX"` -> (then here index 9 so stop)<br>
+`"XXXXXXXXX"` -> `"XXXXXXXXO"` -> `"XXXXXXXX "` -> (then here index 9 so stop)<br>
+`"XXXXXXXX "` -> `"XXXXXXXO "` -> `"XXXXXXXOX"`" -> `"XXXXXXXOO"` -> `"XXXXXXXO "` -> (then here index 9 so stop)<br>
+`"XXXXXXXO "` -> `"XXXXXXX  "` -> ... and so on<br>
+
+It's fine if you weren't able to follow. Just look at the following simplified animation: (simplification = 2 positions instead of 9, and i marked blank as `B` for better visibility)<br>
+[GIF HERE!!]
+
+</details>
 
 ### Method 3: Iterative using recursive relationships
 
