@@ -57,11 +57,16 @@ def filter_game_states():
     all_states = generate_all_states()
     #remove all where (number of X) - (number of O) > 1 since we can only have alternating moves and X always starts
     # same as generating a new list with only valid states
-    all_states = [state for state in all_states if 0 <= state.count("X") - state.count("O") <= 1 and state.count(" ") > 1]
+    new_all_states = []
+    for state in all_states:
+        if 0 <= (state.count("X") - state.count("O")) <= 1 and state.count(" ") > 1:
+            new_all_states.append(state)
+
+    all_states = new_all_states
     
     #remove rotations and mirrored states. 
     # For this we pick a state one at a time, generate all its rotations and mirrored versions, and then check if any of those already exist in new_states. IF not we add them.
-    unique_states = []
+    unique_states = {}
     index_map = [6,3,0,7,4,1,8,5,2] # 90 deg rotated indexes. we can repeat this rotation again and again for every rotation.
     mirror_y_map = [2,1,0,5,4,3,8,7,6] # mirrored indexes along y axis
     mirror_x_map = [6,7,8,3,4,5,0,1,2] # mirrored indexes along x axis
@@ -93,10 +98,13 @@ def filter_game_states():
             if item in unique_states:
                 break
         else:
-            unique_states.append(state) #if none matches then for loop is not broken and the state is added (for-else loop)
+            unique_states[state] = True #if none matches then for loop is not broken and the state is added (for-else loop)
     
     return unique_states
 
 
 if __name__ == "__main__":
+    import time
+    start_time = time.time()
     print(len(filter_game_states())) 
+    print(f"Time taken: {time.time() - start_time} seconds")

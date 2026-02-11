@@ -542,7 +542,7 @@ This is how all the permutations are generated:<br>
 `"XXXXXXXO "` -> `"XXXXXXX  "` -> ... and so on<br>
 
 It's fine if you weren't able to follow. Just look at the following simplified animation: (simplification = 2 positions instead of 9, and i marked blank as `B` for better visibility)<br>
-<img src="images/generator_animation.gif" alt="Animation of a recursion tree" width="70%" />
+<img src="images/generator_animation.gif" alt="Animation of a recursion tree" loop=infinite />
 
 
 ### Method 3: Iterative using recursive relationships
@@ -961,6 +961,37 @@ if __name__ == "__main__":
 Now we need to map it to matchboxes and initialize beads in them.<br>
 We can use a dictionary for this purpose. Also accessing a dictionary item is O(1) on average due to hashmaps (meaning fast regardless of number of items stored) unlike lists where searching is O(n) (meaning time taken increases linearly with number of items stored).<br>
 Also rehashing cost does not negate the O(1) since we max only add approx 600 items and we access its items more than that.<br>
-If we want to exploit this speed in the filtering thing too then we could've made a dict rather than a list for unique_states and then just do `if item in unique_states_dict:`and also we would already have a dict so no need to convert to dict later; but since this is a one time operation and we have only 304 items, it doesnt matter much. I would do it but imagine spending 5 minutes on this optimisation that saves a few milliseconds once a while<br>
+If we want to exploit this speed in the filtering thing too then we could've made a dict rather than a list for unique_states and then just do `if item in unique_states_dict:`and also we would already have a dict so no need to convert to dict later; but since this is a one time operation and we have only 304 items, it doesnt matter much. I would do it but imagine spending a minute on this optimisation that saves a little time once a while<br>
+
+Actually let me do that. If we time our current code with:
+```python
+if __name__ == "__main__":
+    import time
+    start_time = time.time()
+    print(len(filter_game_states())) 
+    print(f"Time taken: {time.time() - start_time} seconds")
+```
+We get this time:
+```bash
+(menace-py3.12) ankit@LAPTOP-T90NGO2F:~/python/MENACE$ python3 menace.py 
+593
+Time taken: 0.3060119152069092 seconds
+```
+
+AND.. if we change the definition of `unique_states = []` to `unique_states = {}` and then change the code to add items to dict rather than list like this:
+```python
+        for item in similar_states:  
+            if item in unique_states:
+                break
+        else:
+            unique_states[state] = True #if none matches then for loop is not broken and the state is added (for-else loop)
+```
+Then we get this time:
+```bash
+(menace-py3.12) ankit@LAPTOP-T90NGO2F:~/python/MENACE$ python3 menace.py 
+593
+Time taken: 0.06501245498657227 seconds
+```
+NICE! 
 
 ## TODO! converting to a dictionary of matchboxes and initializing beads
