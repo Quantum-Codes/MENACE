@@ -2,10 +2,8 @@
 Self trained menace
 
 # TODO
-[ ] Explain the 3 methods of generation in detail tags<br>
-[ ] Update old code and test again for the "how do we know it's true" Part. Maybe some conditions were messed up in re-editing. proofread the whole section. <br>
 [ ] Add joke as a climax to the blog - "And now we need to print <something>. that is left as an excercise to the reader"<br>
-[ ] Making matchboxes, filling, training, avoiding empty matchboxes, completed AI vs human, Adding AI vs AI to train, Running, Try to optimize using multiprocess or threads, Result
+[ ] Making matchboxes, filling, training, avoiding empty matchboxes, completed AI vs human, Adding AI vs AI to train, Running, Try to optimize using multiprocess or threads
 Trying to deploy while handling multiple games concurrently and learn socketio
 
 Menace - Matchbox Educable Noughts and Crosses Engine<br>
@@ -36,6 +34,7 @@ There is a possibility that a box empties itself in the process - this means tha
 
 Also typically we always let the bot start so it only learns X's moves or Y's moves (these are disjoint to one another). I would want them to play against each other and improve each other, and due to this disjoint property I can just use the same set of matchboxes and in the end have a singular model that can play both X and O.
 
+If you did not understand fully then watch this [video](https://www.youtube.com/watch?v=R9c-_neaxeU) by Stand-Up Maths youtube channel.
 <br>
 
 # Creating the tictactoe game itself
@@ -543,8 +542,7 @@ This is how all the permutations are generated:<br>
 `"XXXXXXXO "` -> `"XXXXXXX  "` -> ... and so on<br>
 
 It's fine if you weren't able to follow. Just look at the following simplified animation: (simplification = 2 positions instead of 9, and i marked blank as `B` for better visibility)<br>
-![Animation of a recursion tree](https://github.com/Quantum-Codes/MENACE/blob/main/images/generator_animation.gif)
-<img src="images/generator_animation.gif" width="70%" />
+<img src="images/generator_animation.gif" alt="Animation of a recursion tree" width="70%" />
 
 
 ### Method 3: Iterative using recursive relationships
@@ -799,7 +797,7 @@ if 1 >= state.count("X") - state.count("O") >= 0:
 ```
 to
 ```python
-if 1 >= state.count("X") - state.count("O") >= 0 and state.count(" ") > 1:
+if (state.count("X") - state.count("O")) == 0 and state.count(" ") > 1:
 ```
 
 <details>
@@ -845,9 +843,13 @@ def check_winner(board: str):
 
 def filter_game_states():
     all_states = generate_all_states()
-    #remove all where (number of X) - (number of O) > 1 since we can only have alternating moves and X always starts
-    # same as generating a new list with only valid states
-    all_states = [state for state in all_states if 0 <= state.count("X") - state.count("O") <= 1 and state.count(" ") > 1]
+
+    new_all_states = []
+    for state in all_states:
+        if (state.count("X") - state.count("O")) == 0 and state.count(" ") > 1:
+            new_all_states.append(state)
+
+    all_states = new_all_states
     
     #remove rotations and mirrored states. 
     # For this we pick a state one at a time, generate all its rotations and mirrored versions, and then check if any of those already exist in new_states. IF not we add them.
@@ -898,7 +900,7 @@ AND... The output:
 304
 ```
 Yay!<br>
-And actually removing condition 2 is pretty nice and i couldnt think about it before i went around searching why my count was `338` prior to this, so i will keep the condition 2, the blanks >1, (see the filtering code below to see) but then reintroduce both X and Os<br>
+And actually adding condition 2 is pretty nice; i couldnt think about it before i went around searching why my count was `338` prior to this, so i will keep the condition 2, the blanks > 1, (see the filtering code below to see) but then reintroduce both X and Os<br>
 
 <details>
 <summary>Here is my current code for filtering invalid states</summary>
@@ -958,7 +960,7 @@ if __name__ == "__main__":
 
 Now we need to map it to matchboxes and initialize beads in them.<br>
 We can use a dictionary for this purpose. Also accessing a dictionary item is O(1) on average due to hashmaps (meaning fast regardless of number of items stored) unlike lists where searching is O(n) (meaning time taken increases linearly with number of items stored).<br>
-Also rehashing cost does not negate the O(1) since we max only add approx 600 items and we access its items (membership check) more than that.<br>
+Also rehashing cost does not negate the O(1) since we max only add approx 600 items and we access its items more than that.<br>
 If we want to exploit this speed in the filtering thing too then we could've made a dict rather than a list for unique_states and then just do `if item in unique_states_dict:`and also we would already have a dict so no need to convert to dict later; but since this is a one time operation and we have only 304 items, it doesnt matter much. I would do it but imagine spending 5 minutes on this optimisation that saves a few milliseconds once a while<br>
 
 ## TODO! converting to a dictionary of matchboxes and initializing beads
