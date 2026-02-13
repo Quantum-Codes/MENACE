@@ -992,6 +992,12 @@ Then we get this time:
 593
 Time taken: 0.06501245498657227 seconds
 ```
-NICE! 
+NICE!<br> I wonder what happens when we use sets for both `unique_states` and `similar_states` since we dont care about order and we just want to check if any of the similar states are in unique states. I will leave that as an exercise for you. (hint: you can use set intersection to check if any of the similar states are in unique states and get rid of one of the for loops.)<br>
+Answer: You do get another speedup! Time now was `0.015 seconds` for one of the runs.<br>
+You can message me if you need the code and cant change yourself
 
-## TODO! converting to a dictionary of matchboxes and initializing beads
+I will keep the dictionary version since it is convenient for the next steps.
+
+
+## Initializing beads in matchboxes
+Now we need to initialize the matchboxes for each of these unique states. We can check positions are unfulled and place a bead for that
