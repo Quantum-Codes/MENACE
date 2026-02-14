@@ -34,6 +34,10 @@ def check_winner(board: str):
         return board[0]
     if board[2] == board[4] == board[6] != " ":
         return board[2]
+    
+    if board.count(" ")==0:
+        return "draw"
+    
     return None
 
 def game_loop(board, player):
@@ -46,18 +50,29 @@ def game_loop(board, player):
 if __name__ == "__main__":
     #game always starts with X
 
-    ai = AI()
+    ai = AI(1)
     board = " " * 9
     player = 1 # 1 = X, 0 = O
+ 
     while True:
         board, move = game_loop(board, "X" if player == 1 else "O")
         ai.save_move(move, player)
         
-        winner = check_winner(board)
-        if winner:
+        result = check_winner(board)
+        if result:
             print_board(board)
-            print(f"Player {winner} wins!")
+            if result == "draw":
+                print("draw!")
+            else:
+                print(f"Player {result} wins!")
+            ai.reset_game_state(result)
             break
-        
-        
+
         player = 1 - player # Switch player
+
+    #all matchbox contents
+    for key in ai.unique_states:
+        print(key,ai.unique_states[key])
+    
+        
+        
