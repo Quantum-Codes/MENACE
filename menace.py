@@ -1,7 +1,9 @@
 class AI:
-    def __init__(self):
+    def __init__(self,player):
         self.X_move_list = []
         self.O_move_list = []
+        self.player = player   
+        unique_states = filter_game_states() 
         self.games_played = 0
 
     def save_move(self, move, player):
@@ -11,6 +13,19 @@ class AI:
             self.O_move_list.append(move)
     
     def reset_game_state(self):
+        
+        played_states = generate_played_states(self.X_move_list, self.O_move_list)
+        board = played_states[-1] 
+        winner = check_winner(board)
+        if winner == "X" and self.player == 1 or winner == "O" and self.player == 0:
+            win = 1
+        elif winner == "X" and self.player == 0 or winner == "O" and self.player == 1:
+            win = -1
+        else:
+            win = 0
+        unique_states = update_beads(played_states,unique_states,win)
+
+
         self.X_move_list.clear()
         self.O_move_list.clear()
         self.games_played += 1
@@ -51,6 +66,10 @@ def check_winner(board: str):
         return board[0]
     if board[2] == board[4] == board[6] != " ":
         return board[2]
+    
+    if board.count(" ")==0:
+        return "draw"
+    
     return None
 
 def filter_game_states():
@@ -98,9 +117,36 @@ def filter_game_states():
             if item in unique_states:
                 break
         else:
-            unique_states[state] = True #if none matches then for loop is not broken and the state is added (for-else loop)
-    
+            #add the initial beads to each state
+            #the number of beads is stored in a list of 9 items (corresponding to 9 boxes) and every possible move(" ") will get 1 bead while others get 0.
+            beads = [int(" "==state[i]) for i in range(9)]
+            unique_states[state] = beads #if none matches then for loop is not broken and the state is added (for-else loop)
+
     return unique_states
+
+def generate_played_states(X_moves, O_moves):#generate all board positions that happend
+    played_states = []
+    state = [" " for j in range(len(X_moves)+len(O_moves))]
+    for i in range(len(X_moves)+len(O_moves)):
+        if i%2==0:
+            state[X_moves[i//2]] = "X"
+        else:
+            state[O_moves[(i-1)//2]] = "O"
+        state = "".join(state)
+        played_states.append(state)
+    return played_states
+
+   
+def update_beads(played_states,unique_states,win): #win=1 if the ai wins, win=0 if it draws and win=-1 for a loss
+    #played states is the list of states played in the position
+    for state in played_states:
+        beads = unique_states[state]
+        for i in range(9):
+            if beads[i]!=0:
+                beads[i] = ((win//2)+1)*(beads[i] + win*2+1)  # if win=1 => +3; win=0 => +1; win=-1 => remove all
+        unique_states[state] = beads
+    return unique_states
+                
 
 
 if __name__ == "__main__":
