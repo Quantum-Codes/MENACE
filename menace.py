@@ -3,7 +3,7 @@ class AI:
         self.X_move_list = []
         self.O_move_list = []
         self.player = player   
-        unique_states = filter_game_states() 
+        self.unique_states = filter_game_states() 
         self.games_played = 0
 
     def save_move(self, move, player):
@@ -12,18 +12,16 @@ class AI:
         else:
             self.O_move_list.append(move)
     
-    def reset_game_state(self):
+    def reset_game_state(self, winner):
         
-        played_states = generate_played_states(self.X_move_list, self.O_move_list)
-        board = played_states[-1] 
-        winner = check_winner(board)
+        played_states = generate_played_states(self.X_move_list, self.O_move_list, self.unique_states)
         if winner == "X" and self.player == 1 or winner == "O" and self.player == 0:
             win = 1
         elif winner == "X" and self.player == 0 or winner == "O" and self.player == 1:
             win = -1
         else:
             win = 0
-        unique_states = update_beads(played_states,unique_states,win)
+        self.unique_states = update_beads(played_states,self.unique_states,win)
 
 
         self.X_move_list.clear()
@@ -124,17 +122,52 @@ def filter_game_states():
 
     return unique_states
 
-def generate_played_states(X_moves, O_moves):#generate all board positions that happend
+def generate_played_states(X_moves, O_moves, unique_states):#generate all board positions that happend
     played_states = []
-    state = [" " for j in range(len(X_moves)+len(O_moves))]
-    for i in range(len(X_moves)+len(O_moves)):
-        if i%2==0:
-            state[X_moves[i//2]] = "X"
+    state = [" " for j in range(9)]
+    x_idx = o_idx = 0
+    while x_idx<len(X_moves): #X and O are put in same iteration. So, x_idx is checked as it starts first
+        if x_idx==o_idx:
+            state[X_moves[x_idx]] = "X"
+            x_idx+=1
         else:
-            state[O_moves[(i-1)//2]] = "O"
-        state = "".join(state)
-        played_states.append(state)
+            state[O_moves[o_idx]] = "O"
+            o_idx+=1
+        winner = check_winner("".join(state))
+        if winner==None and state.count(" ")>1: 
+            played_states.append(find_similar_states("".join(state),unique_states))
+        else:
+            pass #The winning states are not stored in the unique states.
+            
     return played_states
+
+
+def find_similar_states(state, unique_states):
+    index_map = [6,3,0,7,4,1,8,5,2]
+    mirror_y_map = [2,1,0,5,4,3,8,7,6]
+    mirror_x_map = [6,7,8,3,4,5,0,1,2]
+    # make mirror images
+    y_mirror = ''.join([state[index] for index in mirror_y_map])
+    x_mirror = ''.join([state[index] for index in mirror_x_map])
+    similar_states = [state, x_mirror, y_mirror]
+
+    # generate rotations (90 deg at a time)
+    to_rotate = state
+    to_rotate_y = y_mirror
+    to_rotate_x = x_mirror
+    for _ in range(3):
+        to_rotate = ''.join([to_rotate[index] for index in index_map])
+        to_rotate_y = ''.join([to_rotate_y[index] for index in index_map])
+        to_rotate_x = ''.join([to_rotate_x[index] for index in index_map])
+        similar_states.append(to_rotate)
+        similar_states.append(to_rotate_y)
+        similar_states.append(to_rotate_x)
+
+    for item in similar_states:  #it is guaranteed that one of the similar states exist as all possible unique board is stored
+        if item in unique_states:
+            return item
+
+    
 
    
 def update_beads(played_states,unique_states,win): #win=1 if the ai wins, win=0 if it draws and win=-1 for a loss

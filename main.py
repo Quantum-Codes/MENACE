@@ -53,6 +53,7 @@ if __name__ == "__main__":
     ai = AI(1)
     board = " " * 9
     player = 1 # 1 = X, 0 = O
+ 
     while True:
         board, move = game_loop(board, "X" if player == 1 else "O")
         ai.save_move(move, player)
@@ -64,7 +65,14 @@ if __name__ == "__main__":
                 print("draw!")
             else:
                 print(f"Player {result} wins!")
+            ai.reset_game_state(result)
             break
-        
-        
+
         player = 1 - player # Switch player
+
+    #all matchbox contents
+    for key in ai.unique_states:
+        print(key,ai.unique_states[key])
+    
+        
+        
