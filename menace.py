@@ -1,8 +1,7 @@
 class AI:
-    def __init__(self,player):
+    def __init__(self):
         self.X_move_list = []
         self.O_move_list = []
-        self.player = player   
         self.unique_states = filter_game_states() 
         self.games_played = 0
 
@@ -12,9 +11,7 @@ class AI:
         else:
             self.O_move_list.append(move)
     
-    def reset_game_state(self, winner):
-        
-        
+    def train(self, winner):
         if winner == "X" and self.player == 1 or winner == "O" and self.player == 0:
             win = 1
         elif winner == "X" and self.player == 0 or winner == "O" and self.player == 1:
@@ -24,8 +21,7 @@ class AI:
         played_states, played_indexes = generate_played_states(self.X_move_list, self.O_move_list, self.unique_states)[0], generate_played_states(self.X_move_list, self.O_move_list, self.unique_states)[1]
         self.unique_states = update_beads(played_states,played_indexes,self.unique_states,win)
 
-
-
+    def reset_game_state(self):
         self.X_move_list.clear()
         self.O_move_list.clear()
         self.games_played += 1
@@ -116,10 +112,13 @@ def filter_game_states():
         for item in similar_states:  
             if item in unique_states:
                 break
-        else:
-            #add the initial beads to each state
-            #the number of beads is stored in a list of 9 items (corresponding to 9 boxes) and every possible move(" ") will get 1 bead while others get 0.
-            beads = [int(" "==state[i]) for i in range(9)]
+        else: # else runs when loop wasnt broken out of, meaning none of the similar states were found in unique_states and we are adding a new state.
+            # every possible move(" ") will get 3 beads while filled ones get 0.
+            beads = []
+            for i in range(9):
+                if state[i] == " ":
+                    beads.extend([i] * 3)
+                    
             unique_states[state] = beads #if none matches then for loop is not broken and the state is added (for-else loop)
 
     return unique_states

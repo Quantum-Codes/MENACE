@@ -444,47 +444,7 @@ We need to do:
 
 And somewhere in the middle we need a system to save whatever it learnt and load back on startup; also need to optimize the matchbox storage so that we dont store symmetric board states separately (since they are equivalent). 
 
-
-We couldve created a class for the game too but i wanted to show both functional programming and object oriented programming. So now we use functional programming for the game and object oriented programming for the AI.
-
-Added code: (for the 1 and 2 steps)
-```python
-class AI:
-    def __init__(self):
-        self.X_move_list = []
-        self.O_move_list = []
-        self.games_played = 0
-
-    def save_move(self, move, player):
-        if player == 1:
-            self.X_move_list.append(move)
-        else:
-            self.O_move_list.append(move)
-    
-    def reset_game_state(self):
-        self.X_move_list.clear()
-        self.O_move_list.clear()
-        self.games_played += 1
-
-# main loop
-if __name__ == "__main__":
-    #game always starts with X
-
-    ai = AI()
-    board = " " * 9
-    player = 1 # 1 = X, 0 = O
-    while True:
-        board, move = game_loop(board, "X" if player == 1 else "O")
-        ai.save_move(move, player)
-        
-        winner = check_winner(board)
-        if winner:
-            print_board(board)
-            print(f"Player {winner} wins!")
-            break
-        
-        player = 1 - player # Switch player
-```
+Let us start with item 3. 
 
 ## Generating all possible board states 
 I will show 3 methods
@@ -541,7 +501,7 @@ This is how all the permutations are generated:<br>
 `"XXXXXXXX "` -> `"XXXXXXXO "` -> `"XXXXXXXOX"`" -> `"XXXXXXXOO"` -> `"XXXXXXXO "` -> (then here index 9 so stop)<br>
 `"XXXXXXXO "` -> `"XXXXXXX  "` -> ... and so on<br>
 
-It's fine if you weren't able to follow. Just look at the following simplified animation: (simplification = 2 positions instead of 9, and i marked blank as `B` for better visibility)<br>
+It's fine if you weren't able to follow. Just look at the following simplified animation: (simplification = 2 positions instead of 9, and I've marked blank as `B` for better visibility)<br>
 <img src="images/generator_animation.gif" alt="Animation of a recursion tree" loop=infinite />
 
 
@@ -562,7 +522,7 @@ Technically this is recursion too, just another version that uses loops instead 
 def generator(possibilities):
     states = []
     for possibility in possibilities:
-        states.extend([possibility + " ", possibility + "X", possibility + "O"]) # for each existing state, just add 3 possibilities of the new next character
+        states.extend([possibility + " ", possibility + "X", possibility + "O"]) # for each existing state, just add 3 possibilities of the new next character. 
     return states 
 
 def generate_all_states():
@@ -658,7 +618,7 @@ X | X |          |   | O        | X | X
 2nd one is a clockwise 90 deg rotation of 1st one<br>
 3rd one is a mirror image of 1st one along y axis<br>
 But in all of them, player X just need to play the same move (same to us humans - complete the X line).<br>
-Wouldnt you be mad if the AI wins in one of them but then plays dumb in the other? I would (especially after all this coding).<br>
+Wouldn't you be mad if the AI wins in one of them but then plays dumb in the other? I would (especially after all this coding).<br>
 So just training the AI on one of these should teach it how to handle ALL of them.<br>
 This is why we remove equivalent symmetric states. And later when we find these during a game, we convert these states by rotations or reflections to match one of these for picking the move and later training.<br>
 
@@ -998,6 +958,111 @@ You can message me if you need the code and cant change yourself
 
 I will keep the dictionary version since it is convenient for the next steps.
 
+## Hotfix:
+Forgot to add detection for draw games. Modify check_winner() function to return "Draw" if there are no blank spaces left and no winner. And then in the main loop, we check for draw too and break the loop if it is a draw.
 
-## Initializing beads in matchboxes
-Now we need to initialize the matchboxes for each of these unique states. We can check positions are unfulled and place a bead for that
+```python
+def check_winner(board: str):
+    # Check rows and columns
+    for i in range(3):
+        if board[i*3] == board[i*3+1] == board[i*3+2] != " ":
+            return board[i*3]
+        if board[i] == board[i+3] == board[i+6] != " ":
+            return board[i]
+        
+    # Check diagonals
+    if board[0] == board[4] == board[8] != " ":
+        return board[0]
+    if board[2] == board[4] == board[6] != " ":
+        return board[2]
+    
+    if board.count(" ") == 0:
+        return "draw"
+    
+    return None
+```
+
+Main loop:
+```python
+if __name__ == "__main__":
+    #game always starts with X
+
+    ai = AI()
+    board = " " * 9
+    player = 1 # 1 = X, 0 = O
+ 
+    while True:
+        board, move = game_loop(board, "X" if player == 1 else "O")
+        
+        result = check_winner(board)
+        if result:
+            print_board(board)
+            if result == "draw":
+                print("draw!")
+            else:
+                print(f"Player {result} wins!")
+
+            break
+
+        player = 1 - player # Switch player
+```
+
+## Adding beads to matchboxes
+
+Now we need to initialize the matchboxes for each of these unique states. We can check positions are empty and place a bead for that position. We will initialse with 3 beads for each possible move so it does have a few chances to explore a few combinations before it decides a certain move to be utterly useless (0 beads). I am still undecided on limiting min beads to 1 or 0. It really depends on how far the game has already progressed. I would ideally want a way to punish or reward moves heavier in late game states (since less chance to recover from a mistake) and keep minbeads=1 for early states. But i will keep it simple for now and just have 0 as minimum for all states. We can add that later if we want to.
+Initialisation is independent of this logic though - everyone starts at 3 beads each.<br>
+
+We can add the beads right after we generate the state. Also since we need to simulate a matchbox for each state, we can just store either a string or a list of beads for each state in the dictionary. I am using a list for this.
+
+```python
+
+
+
+
+
+
+
+
+
+
+
+## SAVING MOVES
+
+Added code: (for the 1 and 2 steps)
+```python
+class AI:
+    def __init__(self):
+        self.X_move_list = []
+        self.O_move_list = []
+        self.games_played = 0
+
+    def save_move(self, move, player):
+        if player == 1:
+            self.X_move_list.append(move)
+        else:
+            self.O_move_list.append(move)
+    
+    def reset_game_state(self):
+        self.X_move_list.clear()
+        self.O_move_list.clear()
+        self.games_played += 1
+
+# main loop
+if __name__ == "__main__":
+    #game always starts with X
+
+    ai = AI()
+    board = " " * 9
+    player = 1 # 1 = X, 0 = O
+    while True:
+        board, move = game_loop(board, "X" if player == 1 else "O")
+        ai.save_move(move, player)
+        
+        winner = check_winner(board)
+        if winner:
+            print_board(board)
+            print(f"Player {winner} wins!")
+            break
+        
+        player = 1 - player # Switch player
+```
