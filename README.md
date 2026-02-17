@@ -502,8 +502,9 @@ This is how all the permutations are generated:<br>
 `"XXXXXXXO "` -> `"XXXXXXX  "` -> ... and so on<br>
 
 It's fine if you weren't able to follow. Just look at the following simplified animation: (simplification = 2 positions instead of 9, and I've marked blank as `B` for better visibility)<br>
-<img src="images/generator_animation.gif" alt="Animation of a recursion tree" loop=infinite />
-
+<img src="images/generator_animation.gif" alt="Animation of a recursion tree" loop=infinite /><br>
+These are the generated states (return value of the leaves) 
+<img src="images/recursion-tree-return.png" alt="Generateed states from recursion"><br>
 
 ### Method 3: Iterative using recursive relationships
 
