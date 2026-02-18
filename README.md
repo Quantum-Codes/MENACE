@@ -433,8 +433,10 @@ if __name__ == "__main__":
 <br><br>
 
 # Creating the MENACE AI
-We will create a MENACE class that will handle all the logic for the AI. <br>
-We need to do: 
+
+We need to generate all possible board states for tic-tac-toe and then remove the invalid and symmetric states to optimize our AI’s learning process. These will act as labels on the matchboxes so we can change the number of beads (the moves we play next time on the current state) based on the result of the game.
+
+This is the general plan for the whole project:
 1. We create an AI class for all the AI logic.
 2. Save every move played in a game (to reward/punish later) using lists.
 3. Create all possible board states and initialize matchboxes for them 
